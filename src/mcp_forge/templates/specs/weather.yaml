@@ -1,0 +1,39 @@
+name: weather
+version: 0.1.0
+description: A tiny weather MCP server. Swap the stub body for a real API call.
+mcp_version: 2025-06-18
+
+tools:
+  - name: get_weather
+    description: Get the current weather for a city.
+    params:
+      - name: city
+        type: str
+        description: City name, e.g. "London".
+      - name: units
+        type: enum
+        choices: [celsius, fahrenheit]
+        default: celsius
+        description: Temperature units.
+    returns: str
+    body: |
+      # Replace this stub with a real call to your weather provider.
+      symbol = "C" if units == "celsius" else "F"
+      return f"Weather in {city}: 22 degrees {symbol}, clear skies."
+
+  - name: forecast
+    description: Get a multi-day forecast for a city.
+    params:
+      - name: city
+        type: str
+        description: City name.
+      - name: days
+        type: int
+        default: 3
+        description: Number of days to forecast.
+    returns: str
+    body: |
+      lines = [f"{city} forecast:"]
+      for day in range(1, days + 1):
+          lines.append(f"  Day {day}: 20 degrees, partly cloudy.")
+      return "\n".join(lines)

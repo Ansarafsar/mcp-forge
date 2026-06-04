@@ -1,0 +1,45 @@
+name: github-issues
+version: 0.1.0
+description: Search and create GitHub issues. Stub bodies show where to call the GitHub API.
+
+tools:
+  - name: search_issues
+    description: Search issues in a repository.
+    params:
+      - name: repo
+        type: str
+        description: Repository in "owner/name" form.
+      - name: query
+        type: str
+        description: Free-text search query.
+      - name: state
+        type: enum
+        choices: [open, closed, all]
+        default: open
+        description: Issue state to filter by.
+      - name: limit
+        type: int
+        default: 10
+        description: Max results to return.
+    returns: str
+    body: |
+      # TODO: call the GitHub REST API, e.g. GET /search/issues.
+      return f"Would search {repo} for {query!r} (state={state}, limit={limit})."
+
+  - name: create_issue
+    description: Open a new issue.
+    params:
+      - name: repo
+        type: str
+        description: Repository in "owner/name" form.
+      - name: title
+        type: str
+        description: Issue title.
+      - name: body
+        type: str
+        optional: true
+        description: Issue body (optional).
+    returns: str
+    body: |
+      # TODO: call POST /repos/{owner}/{repo}/issues.
+      return f"Would open issue {title!r} in {repo}."

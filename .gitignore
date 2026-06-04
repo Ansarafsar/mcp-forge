@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Test / tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Generated servers (build artifacts)
+server.py
+/out/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+initial_Dev_doc.md

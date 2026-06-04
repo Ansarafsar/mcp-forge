@@ -7,6 +7,7 @@ import ast
 import pytest
 
 from mcp_forge import generate, load_spec
+from mcp_forge.generator import docker_files
 from mcp_forge.loader import SpecError
 from mcp_forge.spec import ForgeSpec
 from mcp_forge.templates import starters
@@ -80,6 +81,65 @@ def test_enum_without_choices_rejected(tmp_path):
     with pytest.raises(SpecError, match="no 'choices'"):
         load_spec(_write(tmp_path, bad))
 
+
+def test_unknown_type_suggests_close_match(tmp_path):
+    bad = "name: x\ntools:\n  - name: t\n    params:\n      - name: p\n        type: integ\n"
+    with pytest.raises(SpecError, match="Did you mean 'integer'"):
+        load_spec(_write(tmp_path, bad))
+
+
+def test_auth_injects_guard(tmp_path):
+    spec = load_spec(_write(tmp_path, _SECURE))
+    code = generate(spec)
+    assert "def _forge_auth() -> None:" in code
+    assert "_FORGE_AUTH_ENV = 'TOK'" in code
+    assert "    _forge_auth()\n" in code
+    ast.parse(code)
+
+
+def test_logging_and_ratelimit_render(tmp_path):
+    spec = load_spec(_write(tmp_path, _SECURE))
+    code = generate(spec)
+    assert "@_forge_log('ping')" in code
+    assert "@_forge_ratelimit('ping')" in code
+    assert "_ForgeTokenBucket(2, 10.0)" in code
+    assert "class _ForgeTokenBucket" in code
+    ast.parse(code)
+
+
+def test_no_runtime_when_no_features(tmp_path):
+    spec = load_spec(_write(tmp_path, _WEATHER))
+    code = generate(spec)
+    assert "_forge_auth" not in code
+    assert "_ForgeTokenBucket" not in code
+
+
+def test_docker_files_complete():
+    spec = ForgeSpec.model_validate(
+        {"name": "d", "tools": [{"name": "t", "body": "return 'x'"}]}
+    )
+    files = docker_files(spec)
+    assert set(files) == {"server.py", "requirements.txt", "Dockerfile", ".dockerignore"}
+    assert "FROM python:" in files["Dockerfile"]
+    assert "mcp>=" in files["requirements.txt"]
+    ast.parse(files["server.py"])
+
+
+_SECURE = """
+name: secure
+auth:
+  type: api_key
+  env: TOK
+observability:
+  logging: true
+  rate_limit:
+    default: { rate: 2, per: 10 }
+tools:
+  - name: ping
+    returns: str
+    body: |
+      return "pong"
+"""
 
 _WEATHER = """
 name: weather

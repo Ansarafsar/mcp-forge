@@ -113,18 +113,64 @@ the `get_weather` and `forecast` tools.
 
 | Command | What it does |
 |---|---|
-| `mcp-forge new <name> [-t TEMPLATE]` | Scaffold a new spec from a starter template. |
-| `mcp-forge build <spec.yaml> [-o OUT]` | Compile a spec into a Python server (default `server.py`). |
+| `mcp-forge init <name> [-t TEMPLATE]` | Scaffold a spec **and** a snapshot-test file. |
+| `mcp-forge new <name> [-t TEMPLATE]` | Scaffold a spec from a starter template. |
+| `mcp-forge build <spec.yaml> [-o OUT] [--target python\|docker]` | Compile a spec. |
+| `mcp-forge run <spec.yaml>` | Build to a temp file and run the server. |
+| `mcp-forge dev <spec.yaml>` | Run with hot reload when the spec changes. |
+| `mcp-forge test [PATH]` | Run snapshot tests (`*.test.yaml`). |
 | `mcp-forge validate <spec.yaml>` | Validate a spec without generating code. |
 | `mcp-forge templates` | List the bundled starter templates. |
 | `mcp-forge version` | Print the installed version. |
 
 Useful flags:
 
+- `build --target docker` — emit a Docker build context instead of a single file.
 - `build --no-check` — skip byte-compiling the generated file.
-- `new --force` — overwrite an existing spec file.
+- `new/init --force` — overwrite existing files.
+- `dev --interval` — seconds between change checks.
 
 Run `mcp-forge --help` or `mcp-forge <command> --help` for details.
+
+### Snapshot testing
+
+MCP-Forge ships a dependency-free mock MCP client. Put a `*.test.yaml` next to a spec:
+
+```yaml
+spec: weather.yaml
+cases:
+  - tool: get_weather
+    args: { city: London, units: celsius }
+    expect: "Weather in London: 22 degrees C, clear skies."
+```
+
+```bash
+mcp-forge test examples/   # builds, launches, drives over stdio, diffs, exits non-zero on fail
+```
+
+### Hardening (auth · logging · rate limits)
+
+Opt in per spec; helpers are inlined so the server stays a single file:
+
+```yaml
+auth:
+  type: api_key            # api_key | bearer_token | oauth_stub
+  env: MCP_API_KEY
+observability:
+  logging: true            # one JSON line per call to stderr
+  audit_url: http://localhost:8080/ingest   # optional forwarding
+  rate_limit:
+    default: { rate: 30, per: 60 }
+    per_tool:
+      get_weather: { rate: 10, per: 60 }
+```
+
+### Docker target
+
+```bash
+mcp-forge build weather.yaml --target docker -o weather-docker
+docker build -t weather weather-docker && docker run -i weather
+```
 
 ## Spec reference
 
@@ -263,11 +309,18 @@ deterministic and covered by a test.
 
 ## Roadmap
 
-MCP-Forge follows a phased plan (see [`initial_Dev_doc.md`](initial_Dev_doc.md)).
-Shipped so far: the core compiler, all three primitives, the CLI, starter
-templates, and validated builds. Planned next: a mock-client test harness
-(`mcp-forge test`), hot-reload `dev` mode, auth/rate-limit blocks, and a Docker
-build target.
+All planned phases are shipped:
+
+| Phase | Status |
+|---|---|
+| 1 — Core compiler (YAML → server) | done |
+| 2 — All three primitives (tools, resources, prompts) | done |
+| 3 — Local test harness (mock client, snapshot tests) | done |
+| 4 — DX (`init`/`build`/`test`/`run`/`dev`, did-you-mean errors) | done |
+| 5 — Auth, structured logging, rate limiting, audit hook | done |
+| 6 — Docker target, docs site, examples, release workflow | done |
+
+Pre-1.0, so APIs may still shift. Issues and PRs welcome.
 
 ## License
 

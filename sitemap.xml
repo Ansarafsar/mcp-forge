@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://Ansarafsar.github.io/mcp-forge/</loc>
+         <lastmod>2026-06-04</lastmod>
+    </url>
+    <url>
+         <loc>https://Ansarafsar.github.io/mcp-forge/cli/</loc>
+         <lastmod>2026-06-04</lastmod>
+    </url>
+    <url>
+         <loc>https://Ansarafsar.github.io/mcp-forge/hardening/</loc>
+         <lastmod>2026-06-04</lastmod>
+    </url>
+    <url>
+         <loc>https://Ansarafsar.github.io/mcp-forge/quickstart/</loc>
+         <lastmod>2026-06-04</lastmod>
+    </url>
+    <url>
+         <loc>https://Ansarafsar.github.io/mcp-forge/spec-reference/</loc>
+         <lastmod>2026-06-04</lastmod>
+    </url>
+    <url>
+         <loc>https://Ansarafsar.github.io/mcp-forge/testing/</loc>
+         <lastmod>2026-06-04</lastmod>
+    </url>
+</urlset>

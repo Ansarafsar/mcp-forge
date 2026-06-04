@@ -1,0 +1,13 @@
+# Snapshot tests for weather.yaml. Run with: mcp-forge test examples/
+spec: weather.yaml
+
+cases:
+  - name: celsius
+    tool: get_weather
+    args: { city: London, units: celsius }
+    expect: "Weather in London: 22 degrees C, clear skies."
+
+  - name: fahrenheit
+    tool: get_weather
+    args: { city: Tokyo, units: fahrenheit }
+    expect: "Weather in Tokyo: 22 degrees F, clear skies."

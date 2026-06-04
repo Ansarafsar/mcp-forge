@@ -14,6 +14,9 @@ from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("{{ spec.name }}")
 
+{% if forge_runtime %}
+{{ forge_runtime }}
+{% endif %}
 {% if prelude %}
 {{ prelude }}
 

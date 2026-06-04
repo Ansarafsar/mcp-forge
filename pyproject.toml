@@ -34,6 +34,7 @@ dependencies = [
 # Needed only to *run* a generated server, not to build one.
 serve = ["mcp>=1.2.0"]
 dev = ["pytest>=8.0", "mcp>=1.2.0"]
+docs = ["mkdocs-material>=9.5"]
 
 [project.urls]
 Homepage = "https://github.com/Ansarafsar/mcp-forge"

@@ -1,0 +1,37 @@
+name: secure-weather
+version: 0.1.0
+description: >
+  The weather server with Phase 5 hardening: API-key auth, structured JSON
+  logging, audit forwarding, and per-tool rate limiting. Set SECURE_WEATHER_KEY
+  before running.
+mcp_version: 2025-06-18
+
+auth:
+  type: api_key
+  env: SECURE_WEATHER_KEY
+  header: X-API-Key
+
+observability:
+  logging: true
+  # Point this at an MCP-Audit endpoint to forward call logs (best-effort).
+  # audit_url: http://localhost:8080/ingest
+  rate_limit:
+    default: { rate: 30, per: 60 }
+    per_tool:
+      get_weather: { rate: 10, per: 60 }
+
+tools:
+  - name: get_weather
+    description: Get the current weather for a city.
+    params:
+      - name: city
+        type: str
+        description: City name.
+      - name: units
+        type: enum
+        choices: [celsius, fahrenheit]
+        default: celsius
+    returns: str
+    body: |
+      symbol = "C" if units == "celsius" else "F"
+      return f"Weather in {city}: 22 degrees {symbol}, clear skies."

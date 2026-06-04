@@ -1,0 +1,17 @@
+# Snapshot tests for notes.yaml. Run: mcp-forge test examples/notes.test.yaml
+spec: notes.yaml
+
+cases:
+  - name: empty-list
+    resource: notes://all
+    expect: "(no notes yet)"
+
+  - name: missing-note
+    tool: get_note
+    args: { note_id: nope }
+    expect: "No note with id nope."
+
+  - name: delete-missing
+    tool: delete_note
+    args: { note_id: nope }
+    expect: "not found"

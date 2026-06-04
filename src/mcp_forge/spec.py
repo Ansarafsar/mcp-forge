@@ -7,6 +7,7 @@ the generator turns them into runnable Python.
 
 from __future__ import annotations
 
+import difflib
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -56,10 +57,12 @@ class ParameterSpec(BaseModel):
                     f"parameter {self.name!r} has type 'enum' but no 'choices' listed"
                 )
         elif t not in TYPE_MAP:
-            allowed = ", ".join(sorted(set(TYPE_MAP) | {"enum"}))
+            choices = sorted(set(TYPE_MAP) | {"enum"})
+            hint = difflib.get_close_matches(t, choices, n=1)
+            suggestion = f" Did you mean {hint[0]!r}?" if hint else ""
             raise ValueError(
-                f"parameter {self.name!r} has unknown type {self.type!r}. "
-                f"Allowed types: {allowed}"
+                f"parameter {self.name!r} has unknown type {self.type!r}.{suggestion} "
+                f"Allowed types: {', '.join(choices)}"
             )
         return self
 
@@ -116,6 +119,49 @@ class PromptSpec(BaseModel):
         return v
 
 
+class RateRule(BaseModel):
+    """A token-bucket rate limit: *rate* calls allowed per *per* seconds."""
+
+    rate: int = Field(gt=0)
+    per: float = Field(default=60.0, gt=0)
+
+
+class RateLimitSpec(BaseModel):
+    """Rate-limit configuration: a default plus optional per-tool overrides."""
+
+    default: Optional[RateRule] = None
+    per_tool: dict[str, RateRule] = Field(default_factory=dict)
+
+
+class ObservabilitySpec(BaseModel):
+    """Logging, rate limiting, and audit forwarding."""
+
+    logging: bool = False
+    rate_limit: Optional[RateLimitSpec] = None
+    # Optional URL to POST structured call logs to (e.g. an MCP-Audit endpoint).
+    audit_url: Optional[str] = None
+
+
+class AuthSpec(BaseModel):
+    """Auth gate applied to every tool call."""
+
+    type: str = "api_key"  # api_key | bearer_token | oauth_stub
+    # Environment variable that must hold the expected secret/token.
+    env: str = "MCP_API_KEY"
+    # Informational: the header a remote transport would carry the secret in.
+    header: Optional[str] = None
+
+    @field_validator("type")
+    @classmethod
+    def _known_type(cls, v: str) -> str:
+        allowed = {"api_key", "bearer_token", "oauth_stub"}
+        if v not in allowed:
+            raise ValueError(
+                f"auth type {v!r} is not supported. Allowed: {', '.join(sorted(allowed))}"
+            )
+        return v
+
+
 class ForgeSpec(BaseModel):
     """Top-level spec: one YAML file == one MCP server."""
 
@@ -125,6 +171,8 @@ class ForgeSpec(BaseModel):
     mcp_version: Optional[str] = None
     # Raw Python inserted at module level (imports, shared state, helpers).
     prelude: Optional[str] = None
+    auth: Optional[AuthSpec] = None
+    observability: Optional[ObservabilitySpec] = None
     tools: list[ToolSpec] = Field(default_factory=list)
     resources: list[ResourceSpec] = Field(default_factory=list)
     prompts: list[PromptSpec] = Field(default_factory=list)

@@ -1,0 +1,24 @@
+name: slack-search
+version: 0.1.0
+description: Search Slack messages. Stub body shows where to call the Slack Web API.
+
+tools:
+  - name: search_messages
+    description: Search messages across channels.
+    params:
+      - name: query
+        type: str
+        description: Search query.
+      - name: channel
+        type: str
+        optional: true
+        description: Restrict to a single channel (optional).
+      - name: count
+        type: int
+        default: 20
+        description: Max messages to return.
+    returns: str
+    body: |
+      # TODO: call the Slack Web API method search.messages.
+      scope = f" in #{channel}" if channel else ""
+      return f"Would search Slack{scope} for {query!r} (count={count})."

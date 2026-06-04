@@ -1,0 +1,70 @@
+name: notes
+version: 0.1.0
+description: A notes server with CRUD tools, a resource that lists notes, and a summarize prompt.
+
+prelude: |
+  # In-memory store. Swap for a database in production.
+  _NOTES: dict[str, dict[str, str]] = {}
+
+tools:
+  - name: add_note
+    description: Create a new note and return its id.
+    params:
+      - name: title
+        type: str
+        description: Note title.
+      - name: body
+        type: str
+        description: Note contents.
+    returns: str
+    body: |
+      import uuid
+      note_id = uuid.uuid4().hex[:8]
+      _NOTES[note_id] = {"title": title, "body": body}
+      return note_id
+
+  - name: get_note
+    description: Fetch a note by id.
+    params:
+      - name: note_id
+        type: str
+        description: The note id returned by add_note.
+    returns: str
+    body: |
+      note = _NOTES.get(note_id)
+      if note is None:
+          return f"No note with id {note_id}."
+      return f"{note['title']}\n\n{note['body']}"
+
+  - name: delete_note
+    description: Delete a note by id.
+    params:
+      - name: note_id
+        type: str
+        description: The note id to delete.
+    returns: str
+    body: |
+      existed = _NOTES.pop(note_id, None) is not None
+      return "deleted" if existed else "not found"
+
+resources:
+  - name: list_notes
+    uri: notes://all
+    description: A newline-separated list of all note ids and titles.
+    returns: str
+    body: |
+      if not _NOTES:
+          return "(no notes yet)"
+      return "\n".join(f"{nid}: {n['title']}" for nid, n in _NOTES.items())
+
+prompts:
+  - name: summarize_note
+    description: Ask the model to summarize a note's body.
+    params:
+      - name: body
+        type: str
+        description: The note body to summarize.
+    template: |
+      Summarize the following note in one sentence:
+
+      {body}

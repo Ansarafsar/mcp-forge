@@ -1,0 +1,39 @@
+site_name: MCP-Forge
+site_description: Compile a single YAML spec into a runnable Model Context Protocol server.
+site_url: https://Ansarafsar.github.io/mcp-forge/
+repo_url: https://github.com/Ansarafsar/mcp-forge
+repo_name: Ansarafsar/mcp-forge
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Spec reference: spec-reference.md
+  - CLI reference: cli.md
+  - Testing: testing.md
+  - Hardening: hardening.md
